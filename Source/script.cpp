@@ -2495,11 +2495,12 @@ int CEXEBuild::doCommand(int which_token, LineParser &line)
         PRINTHELP();
       }
 
-      int k=line.gettoken_enum(a, _T("zlib\0bzip2\0lzma\0"));
+      int k=line.gettoken_enum(a, _T("zlib\0bzip2\0lzma\0zstd\0"));
       switch (k) {
         case 0: compressor = &zlib_compressor; break;
         case 1: compressor = &bzip2_compressor; break;
         case 2: compressor = &lzma_compressor; break;
+        case 3: compressor = &zstd_compressor; break;
         default: PRINTHELP();
       }
 
@@ -2822,7 +2823,9 @@ int CEXEBuild::doCommand(int which_token, LineParser &line)
 
       int s;
       build_compress_level=line.gettoken_int(1,&s);
-      if (!s || build_compress_level < 0 || build_compress_level > 9) PRINTHELP();
+      if (!s || build_compress_level < 1) PRINTHELP();
+      if (compressor == &zstd_compressor && build_compress_level > 19) PRINTHELP();
+      if ((compressor == &zlib_compressor || compressor == &bzip2_compressor) && build_compress_level > 9) PRINTHELP();
       SCRIPT_MSG(_T("SetCompressionLevel: %u\n"), build_compress_level);
     }
     return PS_OK;
